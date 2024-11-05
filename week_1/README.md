@@ -66,6 +66,19 @@
 <hr>
 <br>
 
+### JVM 스레드 동작 관련하여..
+
+- **JVM 스레드**
+  - 가상머신 관리: JVM이 스레드를 관리하며, 플랫폼 독립적
+  - 추상화된 스케줄링: JVM이 OS 스레드 위에 자체 스케줄링을 추가
+  - Garbage Collection 영향: GC와 같은 JVM 내부 메커니즘이 스레드 성능에 영향을 미침
+  - OS 스레드
+- **운영체제 관리**
+  - OS가 직접 스레드 관리 및 스케줄링
+  - 커널 레벨에서 작업 분배: 다중 코어와 직접 상호작용하여 자원 할당
+  - 시스템 호출 가능: IO 및 시스템 자원 접근 시, 직접적으로 OS 자원을 활용
+
+
 ### Reference
 
 - [blackberry](https://www.qnx.com/developers/docs/7.1/#com.qnx.doc.sat/topic/events_Context_switch_time.html)
