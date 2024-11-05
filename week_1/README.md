@@ -24,6 +24,11 @@
   - 동시성 처리의 경우, core 1개에서 빠르게 스레드가 컨텍스트 스위칭 되면서 작업을 진행
     - ![image](https://github.com/user-attachments/assets/7e7e2086-b565-44e4-bc0e-0640dc4db033)
 
+### 병렬 프로세스에 대해 리소스 관점에서 고민해야할 부분은?
+
+- CPU의 Core수에 따라 병렬처리가 가능한지 아닌지 알 수 있다.
+  - core가 1개이면, 동시성 처리만 가능 
+
 ### 컨텍스트 스위칭이란?
 
 - 컨텍스트 스위칭은 CPU의 Core에 올라간 스레드가 짧은 주기를 가지고 계속 바뀌는 것을 의미
@@ -31,6 +36,11 @@
   - ![image](https://github.com/user-attachments/assets/2ba008c5-bccd-4024-8ef9-eccd3dfb450b)
   - 스레드가 스위칭되면서, 스레드별 고유한 메모리 영역인 stack 정보가 계속 바뀌게 된다.
   - ![image](https://github.com/user-attachments/assets/92b513f4-0ce3-4457-a348-c99727ae539c)
+
+### 컨텍스트 스위칭에 대해 우리가 고려해야 할 부분
+
+- 과도한 컨텍스트 스위칭이 리소스에 어떤 문제를 야기할까?
+  - 다수의 스레드가 특정 작업을 진행하는데 있어, 코어를 점유하지 못하고 계속 스위칭된다면, 전반적인 스레드 작업이 밀릴 수 있다.
 
 ### Reference
 
