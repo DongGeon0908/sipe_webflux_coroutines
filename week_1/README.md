@@ -6,6 +6,10 @@
 - 컨텍스트 스위칭 비용이란?
 - 병렬 프로그램시 알아야할 인프라 리소스
 
+<br>
+<hr>
+<br>
+
 ### 스레드와 프로세스에 대해...
 
 - 자원 적인 측면
@@ -16,6 +20,10 @@
   - 스레드의 경우, 동일 프로세스내에서 병렬 처리 진행
   - 프로세스의 경우, 다중 프로세스로 병렬 처리 진행
 
+<br>
+<hr>
+<br>
+
 ### 병렬 처리와 동시성 처리의 차이
 
 - 자원적인 측면
@@ -24,10 +32,18 @@
   - 동시성 처리의 경우, core 1개에서 빠르게 스레드가 컨텍스트 스위칭 되면서 작업을 진행
     - ![image](https://github.com/user-attachments/assets/7e7e2086-b565-44e4-bc0e-0640dc4db033)
 
+<br>
+<hr>
+<br>
+
 ### 병렬 프로세스에 대해 리소스 관점에서 고민해야할 부분은?
 
 - CPU의 Core수에 따라 병렬처리가 가능한지 아닌지 알 수 있다.
   - core가 1개이면, 동시성 처리만 가능 
+
+<br>
+<hr>
+<br>
 
 ### 컨텍스트 스위칭이란?
 
@@ -37,13 +53,22 @@
   - 스레드가 스위칭되면서, 스레드별 고유한 메모리 영역인 stack 정보가 계속 바뀌게 된다.
   - ![image](https://github.com/user-attachments/assets/92b513f4-0ce3-4457-a348-c99727ae539c)
 
+<br>
+<hr>
+<br>
+
 ### 컨텍스트 스위칭에 대해 우리가 고려해야 할 부분
 
 - 과도한 컨텍스트 스위칭이 리소스에 어떤 문제를 야기할까?
   - 다수의 스레드가 특정 작업을 진행하는데 있어, 코어를 점유하지 못하고 계속 스위칭된다면, 전반적인 스레드 작업이 밀릴 수 있다.
+
+<br>
+<hr>
+<br>
 
 ### Reference
 
 - [blackberry](https://www.qnx.com/developers/docs/7.1/#com.qnx.doc.sat/topic/events_Context_switch_time.html)
 - [패스트캠퍼스](https://fastcampus.co.kr/media_branding_cs)
 - [codelatte](https://www.codelatte.io/courses/java_programming_basic/KUYNAB4TEI5KNSJV)
+
