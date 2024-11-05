@@ -23,12 +23,17 @@
     - 스레드 n개를 병렬처리할려면, core도 n개가 있어야 한다.
   - 동시성 처리의 경우, core 1개에서 빠르게 스레드가 컨텍스트 스위칭 되면서 작업을 진행
     - ![image](https://github.com/user-attachments/assets/7e7e2086-b565-44e4-bc0e-0640dc4db033)
-   
 
-### 스레드의 컨텍스트 스위칭이란?
+### 컨텍스트 스위칭이란?
 
-
+- 컨텍스트 스위칭은 CPU의 Core에 올라간 스레드가 짧은 주기를 가지고 계속 바뀌는 것을 의미
+  - 빠르게 스레드를 스위칭하면서, 작업의 정보를 PCB 등에 기록
+  - ![image](https://github.com/user-attachments/assets/2ba008c5-bccd-4024-8ef9-eccd3dfb450b)
+  - 스레드가 스위칭되면서, 스레드별 고유한 메모리 영역인 stack 정보가 계속 바뀌게 된다.
+  - ![image](https://github.com/user-attachments/assets/92b513f4-0ce3-4457-a348-c99727ae539c)
 
 ### Reference
 
 - [blackberry](https://www.qnx.com/developers/docs/7.1/#com.qnx.doc.sat/topic/events_Context_switch_time.html)
+- [패스트캠퍼스](https://fastcampus.co.kr/media_branding_cs)
+- [codelatte](https://www.codelatte.io/courses/java_programming_basic/KUYNAB4TEI5KNSJV)
