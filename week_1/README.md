@@ -261,6 +261,61 @@ Integer result = forkJoinPool.invoke(task);  // 병렬로 작업 수행
 <hr>
 <br>
 
+### ThreadLocal
+
+> ThreadLocal은 Java에서 제공하는 클래스이며, 멀티스레드 환경에서 각 스레드가 독립적으로 변수를 관리할 수 있도록 도와준다. 이를 통해 **스레드 안전성(Thread-Safety)**을 보장하며, 각 스레드는 자신만의 고유한 값을 저장하고 사용할 수 있다.
+
+<img width="921" alt="image" src="https://github.com/user-attachments/assets/dd8a318d-d6f6-4a3e-82c6-54a6aed298e5">
+
+
+**ThreadLocal의 동작 원리**
+- 스레드별 독립적인 변수 저장:
+  - ThreadLocal은 각 스레드가 자신만의 로컬 변수를 가질 수 있게 한다. 즉, 여러 스레드가 동일한 ThreadLocal 객체를 참조하더라도, 각 스레드는 서로 다른 값을 저장하고 읽는다.
+  - 이는 공유 자원에 대한 동기화 문제를 해결하는 데 유용하다. 예를 들어, Spring Security에서는 사용자 인증 정보를 ThreadLocal을 사용해 스레드마다 독립적으로 관리한다.
+- ThreadLocalMap을 통한 저장:
+  - 내부적으로, 각 스레드는 자신의 ThreadLocalMap이라는 데이터를 가지고 있다. 이 맵은 ThreadLocal 객체를 키로 사용하며, 해당 스레드에 맞는 값을 저장한다.
+  - ThreadLocal.get() 메서드를 호출하면 현재 실행 중인 스레드의 ThreadLocalMap에서 값을 가져오고, set() 메서드를 통해 값을 설정한다.
+- 주요 메서드:
+  - set(T value): 현재 스레드의 로컬 변수에 값을 저장한다.
+  - get(): 현재 스레드의 로컬 변수 값을 반환한다.
+  - remove(): 현재 스레드의 로컬 변수 값을 삭제한다. 이는 메모리 누수를 방지하기 위해 반드시 호출해야 한다.
+
+**ThreadLocal 사용 예시**
+```
+public class ThreadLocalExample {
+    private static ThreadLocal<Integer> threadLocal = ThreadLocal.withInitial(() -> 1);
+
+    // 이 코드에서 두 개의 스레드는 각각 독립적인 값(100과 200)을 가지며, 서로 영향을 주지 않는다. 
+    public static void main(String[] args) {
+        Thread thread1 = new Thread(() -> {
+            threadLocal.set(100);
+            System.out.println("Thread 1: " + threadLocal.get());
+        });
+
+        Thread thread2 = new Thread(() -> {
+            threadLocal.set(200);
+            System.out.println("Thread 2: " + threadLocal.get());
+        });
+
+        thread1.start();
+        thread2.start();
+    }
+}
+```
+
+**ThreadLocal의 주요 활용 사례**
+- 사용자 인증 정보 전파: Spring Security에서는 각 사용자 세션마다 인증 정보를 관리하기 위해 ThreadLocal을 사용한다.
+- 트랜잭션 컨텍스트 전파: 트랜잭션 매니저는 트랜잭션 컨텍스트를 전파하는 데 ThreadLocal을 사용하여 각 스레드가 고유한 트랜잭션 상태를 유지할 수 있도록 한다.
+- 스레드 안전 데이터 보관: 멀티스레드 환경에서 동기화 없이도 안전하게 데이터를 저장하고 사용할 수 있다.
+
+**주의 사항**
+- 메모리 누수 위험: 특히 쓰레드 풀 환경에서는 remove() 메서드를 통해 반드시 데이터를 삭제해야 한다. 그렇지 않으면 재사용되는 스레드가 이전 작업의 데이터를 참조할 수 있어 예상치 못한 결과를 초래할 수 있다.
+
+
+<br>
+<hr>
+<br>
+
 ### Reference
 
 - [blackberry](https://www.qnx.com/developers/docs/7.1/#com.qnx.doc.sat/topic/events_Context_switch_time.html)
