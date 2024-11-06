@@ -231,6 +231,35 @@ public class VolatileExample {
 <hr>
 <br>
 
+### FolkJoinPool
+
+- ForkJoinPool은 Java 7에서 도입된 병렬 처리 프레임워크로, 작업을 작은 단위로 분할하고 여러 스레드에 할당하여 병렬로 처리하는 데 최적화된 스레드 풀
+- 이 풀은 분할 정복(Divide and Conquer) 알고리즘을 기반으로 하며, 특히 재귀적으로 작업을 분할하는 태스크를 처리하는 데 유용
+- ForkJoinPool의 주요 특징
+  - 작업 분할(Fork)과 병합(Join):
+    - 큰 작업을 작은 **서브태스크(Subtask)**로 분할한 후, 각 서브태스크를 병렬로 실행. 모든 서브태스크가 완료되면 결과를 다시 합쳐 최종 결과를 생성
+  - Work-Stealing 알고리즘:
+    - 각 스레드는 자신의 작업 큐를 가지고 있으며, 큐에 작업이 없으면 다른 스레드의 큐에서 남은 작업을 훔쳐서 처리. 이를 통해 스레드 간의 부하를 균형 있게 유지하고, 유휴 상태의 스레드를 최소화
+
+- ForkJoinTask:
+  - ForkJoinPool은 두 가지 유형의 태스크인 RecursiveAction(결과가 없는 태스크)과 RecursiveTask(결과가 있는 태스크)를 사용하여 작업을 처리. 이들은 모두 ForkJoinTask 
+
+```
+ForkJoinPool forkJoinPool = new ForkJoinPool();
+MyRecursiveTask task = new MyRecursiveTask(data);
+Integer result = forkJoinPool.invoke(task);  // 병렬로 작업 수행
+```
+
+**장점**
+- 효율적인 CPU 활용: 모든 CPU 코어를 최대한 활용하여 병렬 처리를 수행.
+- 유연한 확장성: 작업 크기에 따라 자동으로 적절한 수준으로 분할 및 병합이 이루어짐.
+
+**주의점**
+- 작은 작업의 과도한 분할과 작업 훔치기에는 오버헤드가 발생할 수 있으므로, 적절한 임계값 설정이 필요합니다3.
+
+<br>
+<hr>
+<br>
 
 ### Reference
 
