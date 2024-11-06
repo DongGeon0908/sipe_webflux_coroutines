@@ -92,6 +92,16 @@ Atomic, Adder, Accumulator 등의 기술 존재
 
 ![image](https://github.com/DongGeon0908/java-cafe-java-deep-dive-2024/assets/50691225/622cfa93-7ad1-4627-b4b9-9677d2e224bd)
 
+**CAS(Compare-And-Swap) 알고리즘의 주요 특징**
+- 비교 및 교체: 메모리 위치의 값을 특정 값과 비교하고, 같을 경우에만 새로운 값으로 교체하는 원자적 연산을 수행
+- 낙관적 동시성 제어: 여러 스레드가 동시에 값을 수정하려 할 때, 실패한 스레드는 대기하지 않고 재시도할 수 있어 성능 향상에 기여
+- ABA 문제: CAS는 값이 중간에 변경되었다가 다시 원래 값으로 돌아오는 경우를 처리하지 못하는 문제가 있으며, 이를 ABA 문제라고 지칭
+
+**ABA Problem**
+- 값의 재사용: 공유된 메모리 값이 A에서 B로 변경된 후 다시 A로 돌아오면, CAS 연산은 값이 변경되지 않았다고 오인 가능
+- 데이터 일관성 문제: 중간에 다른 스레드가 값을 변경한 사실을 인지하지 못해, 데이터의 무결성이 손상될 수 있음
+- 해결책: 버전 번호를 추가하거나 AtomicStampedReference와 같은 구조를 사용해 값뿐만 아니라 상태 변화를 추적하는 방식으로 문제를 해결 가능
+
 
 ### synchronized
 
@@ -105,4 +115,5 @@ Atomic, Adder, Accumulator 등의 기술 존재
 - [blackberry](https://www.qnx.com/developers/docs/7.1/#com.qnx.doc.sat/topic/events_Context_switch_time.html)
 - [패스트캠퍼스](https://fastcampus.co.kr/media_branding_cs)
 - [codelatte](https://www.codelatte.io/courses/java_programming_basic/KUYNAB4TEI5KNSJV)
+- [accessun](https://accessun.github.io/2017/03/12/Optimistic-locking-and-CAS-algorithm/)
 
