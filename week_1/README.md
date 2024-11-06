@@ -84,6 +84,14 @@
 
 ### atomic
 
+java의 AtomicInteger는 Cas 알고리즘을 따른다.
+
+![image](https://github.com/DongGeon0908/java-cafe-java-deep-dive-2024/assets/50691225/dc70da37-6852-4316-a939-c4ba6a37e6e4)
+
+Atomic, Adder, Accumulator 등의 기술 존재
+
+![image](https://github.com/DongGeon0908/java-cafe-java-deep-dive-2024/assets/50691225/622cfa93-7ad1-4627-b4b9-9677d2e224bd)
+
 
 ### synchronized
 
