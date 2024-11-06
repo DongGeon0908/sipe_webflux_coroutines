@@ -102,6 +102,10 @@ Atomic, Adder, Accumulator 등의 기술 존재
 - 데이터 일관성 문제: 중간에 다른 스레드가 값을 변경한 사실을 인지하지 못해, 데이터의 무결성이 손상될 수 있음
 - 해결책: 버전 번호를 추가하거나 AtomicStampedReference와 같은 구조를 사용해 값뿐만 아니라 상태 변화를 추적하는 방식으로 문제를 해결 가능
 
+<br>
+<hr>
+<br>
+
 
 ### synchronized
 
@@ -109,6 +113,9 @@ Atomic, Adder, Accumulator 등의 기술 존재
 - 해당 코드에 대한 스레드가 블록킹되어 사용되어짐.
 
 - Java의 synchronized 키워드는 멀티스레드 환경에서 동기화를 통해 여러 스레드가 동시에 공유 자원에 접근하는 것을 제어하는 메커니즘이다. 이 키워드는 내부적으로 **모니터 락(Monitor Lock)**을 사용하여 구현되며, 하나의 스레드만 임계영역에 접근할 수 있도록 보장한다.
+
+<img width="1010" alt="image" src="https://github.com/user-attachments/assets/e9ce3372-8ece-4bdd-8b8e-ec6538140fec">
+
 
 **동작 원리**
 - 모니터 락: synchronized 블록 또는 메서드에 진입할 때, 해당 객체의 모니터 락을 획득한다. 다른 스레드는 락이 해제될 때까지 대기한다.
@@ -119,6 +126,12 @@ Atomic, Adder, Accumulator 등의 기술 존재
   - 락 획득 및 해제: 스레드는 synchronized 블록에 진입할 때 모니터 락을 획득하고, 블록이 끝나거나 예외가 발생해도 자동으로 락이 헤재한다.
   - 동기화 방식: synchronized는 크게 4가지 방식으로 사용한다. 인스턴스 메서드, 클래스(static) 메서드, 인스턴스 블록, 클래스(static) 블록 동기화 등.
 - synchronized는 구현이 간단하고 직관적이지만, 성능 저하를 유발할 수 있으므로 필요한 최소한의 코드 영역에만 적용하는 것이 중요한다.
+
+
+<br>
+<hr>
+<br>
+
 
 ### Java Monitor
 
@@ -150,15 +163,15 @@ Atomic, Adder, Accumulator 등의 기술 존재
 +-----------------------+
 |       Monitor         |
 |  +-----------------+  |
-|  |     Lock         |  |
+|  |     Lock        |  |  <-- 락을 획득한 스레드만 임계영역에 진입 가능
 |  +-----------------+  |
 |  |                 |  |
-|  |    Entry Set    |  |
+|  |    Entry Set    |  |  <-- 락을 기다리는 스레드들이 대기
 |  |   (Waiting for  |  |
 |  |     Lock)       |  |
 |  +-----------------+  |
 |  |                 |  |
-|  |    Wait Set     |  |
+|  |    Wait Set     |  |  <-- 조건이 충족되지 않아 wait() 호출 후 대기 중인 스레드들
 |  | (Waiting for    |  |
 |  | notify/notifyAll)| |
 |  +-----------------+  |
@@ -169,8 +182,54 @@ Lock: 모니터에 접근하려면 이 락을 먼저 획득해야 함.
 Entry Set: 여러 스레드가 락을 얻기 위해 대기할 때 이곳에 머무름.
 Wait Set: 특정 조건이 충족되지 않아 wait() 상태로 전환된 스레드들이 대기하는 공간.
 
+
+<br>
+<hr>
+<br>
+
+
 ### volatile
 
+<img width="587" alt="image" src="https://github.com/user-attachments/assets/230489d5-beb1-4b4c-a084-2760cc51bc8a">
+
+
+**Java volatile의 동작 원리**
+- Java에서 volatile 키워드는 **변수의 가시성(visibility)**을 보장하는 데 사용되며, 멀티스레드 환경에서 여러 스레드가 동시에 접근하는 변수의 값을 항상 메인 메모리에서 읽고 쓰도록 강제. 이를 통해 스레드 간의 데이터 일관성을 유지
+
+<img width="859" alt="image" src="https://github.com/user-attachments/assets/f46443d5-88a8-471f-a765-70f4ac8fe5bb">
+
+
+**주요 동작 원리**
+- 메모리 가시성 보장:
+  - volatile로 선언된 변수는 각 스레드의 캐시가 아닌 메인 메모리에서 직접 읽고 쓰여짐. 따라서 한 스레드가 변수 값을 수정하면, 다른 스레드는 즉시 그 변화를 볼 수 있음.
+- 명령어 재정렬 방지:
+  - volatile은 **명령어 재정렬(instruction reordering)**을 방지. 이는 컴파일러나 CPU가 최적화를 위해 코드 실행 순서를 변경하지 않도록 하여, 프로그램이 의도한 순서대로 실행되도록 보장.
+- 원자성(Atomicity) 미보장:
+  - volatile은 단순한 읽기/쓰기 작업에 대해서만 가시성을 보장하며, 복합 연산(예: count++)은 원자적으로 수행되지 않음. 이러한 경우에는 synchronized 블록이나 Atomic 클래스를 사용해야함.
+
+```
+public class VolatileExample {
+    private volatile boolean flag = false;
+
+    public void setFlagTrue() {
+        flag = true;  // 메인 메모리에 즉시 반영됨
+    }
+
+    public void checkFlag() {
+        while (!flag) {
+            // flag가 true로 변경될 때까지 대기
+        }
+        System.out.println("Flag is now true.");
+    }
+}
+```
+
+> 위 예시에서 flag 변수는 volatile로 선언되어, 한 스레드가 flag = true로 변경하면 다른 스레드가 즉시 그 변화를 감지할 수 있음.
+
+
+<br>
+<hr>
+<br>
 
 
 ### Reference
@@ -179,4 +238,5 @@ Wait Set: 특정 조건이 충족되지 않아 wait() 상태로 전환된 스레
 - [패스트캠퍼스](https://fastcampus.co.kr/media_branding_cs)
 - [codelatte](https://www.codelatte.io/courses/java_programming_basic/KUYNAB4TEI5KNSJV)
 - [accessun](https://accessun.github.io/2017/03/12/Optimistic-locking-and-CAS-algorithm/)
+- [DZone](https://dzone.com/articles/java-concurrency-understanding-the-volatile-keyword)
 
