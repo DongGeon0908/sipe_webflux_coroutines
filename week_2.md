@@ -357,7 +357,61 @@ public class ThreadLocalExample {
 
 # Tomcat 네트워크 요청을 받아서, 스레드를 할당받고, 이게 스프링까지 넘어와서 어떤식으로 스레드가 처리되는지?
 
+Tomcat의 스레드가 소켓으로 네트워크 요청을 받아들여 이를 Spring 애플리케이션까지 전달하면서 작업하는 과정에 대해 더욱 깊이 있게 설명해 보겠습니다. 이 과정에서는 Tomcat의 네트워크 I/O 처리부터 Spring의 애플리케이션 레벨에서의 요청 처리까지 다루게 됩니다.
 
-<br>
-<hr>
-<br>
+---
+
+![image](https://github.com/user-attachments/assets/d4eaddbf-0d76-450d-a93d-a08fbeb342ae)
+
+![image](https://github.com/user-attachments/assets/9c3b44c8-c1ff-4d89-81a0-dcf3e433c34c)
+
+![image](https://github.com/user-attachments/assets/b6fe4306-6287-49fd-869d-1bba806d9124)
+
+![image](https://github.com/user-attachments/assets/9806b34e-446c-4064-91d4-9905158dbec0)
+
+
+### 1. 소켓 연결 및 요청 수신 (Tomcat Connector 레벨)
+
+   - **소켓 연결**: 클라이언트가 서버에 HTTP 요청을 보내면, 이 요청은 서버에서 열려 있는 포트(예: 포트 8080)에 연결됩니다. Tomcat의 `Connector`는 서버 포트에 바인딩되어 있으며, 클라이언트가 연결을 시도하면 이를 소켓으로 받아들입니다.
+   - **네트워크 I/O 스레드**: Tomcat의 `Connector`는 **NIO(Non-blocking I/O)** 모델을 사용하여 다중 요청을 비동기적으로 수신할 수 있습니다. NIO 모델에서는 **Acceptor 스레드**가 소켓 채널을 지속적으로 모니터링하며, 클라이언트로부터 새 연결이 발생할 때 이를 감지합니다.
+   - **소켓 수락 및 스레드 할당**: 클라이언트 연결이 생기면, `Connector`의 Acceptor 스레드는 이 소켓을 수락하고, **스레드 풀에서 워커 스레드**를 할당합니다. 이때, 새롭게 할당된 워커 스레드는 소켓에서 데이터를 읽어올 준비를 합니다.
+
+### 2. 워커 스레드의 소켓 읽기 및 HTTP 요청 파싱
+   - **소켓의 비동기 데이터 읽기**: 할당된 워커 스레드는 클라이언트가 보낸 데이터를 소켓으로부터 읽습니다. Tomcat은 이 작업을 비동기적으로 수행하여 **처리 시간이 긴 요청에 대해 블로킹되지 않도록** 설계되어 있습니다.
+   - **HTTP 파싱**: 워커 스레드는 읽어 들인 데이터를 HTTP 형식에 맞춰 파싱합니다. 이 과정에서 `GET`, `POST`와 같은 HTTP 메서드, URL, 헤더, 본문 등의 정보를 추출하여, 이 정보들을 Tomcat의 내부 `Request` 객체에 저장합니다. **Request와 Response 객체는 각 요청마다 개별적으로 생성되며**, 이를 통해 다중 요청 처리 시 스레드 간의 데이터 충돌이 방지됩니다.
+
+### 3. 서블릿 할당 및 Pipeline 처리 (Catalina 엔진)
+   - **Pipeline과 Valve 패턴**: Tomcat의 핵심 엔진인 `Catalina`는 **Pipeline**과 **Valve** 구조를 통해 요청을 전처리합니다. `Valve`는 필터와 유사한 역할을 하며, 인증, 인가, 로깅과 같은 작업을 수행합니다. 각 Valve는 워커 스레드에서 순차적으로 실행되며, Valve의 처리가 끝나면 요청이 다음 단계로 넘어갑니다.
+   - **Wrapper 객체와 서블릿 매핑**: `Catalina` 엔진은 `Context`와 `Wrapper` 객체를 통해 요청을 서블릿에 매핑합니다. 최종적으로 요청이 `Wrapper` 객체에 도달하면, Tomcat은 서블릿을 찾아서 요청을 해당 서블릿으로 전달합니다. Spring 기반 애플리케이션에서는 이때 `DispatcherServlet`으로 요청이 라우팅됩니다.
+
+### 4. `DispatcherServlet`에서의 스레드 처리 (Spring 진입점)
+   - **스레드 유지**: Tomcat에서 할당된 워커 스레드는 `DispatcherServlet`까지 그대로 전달되어, 스레드는 변경 없이 애플리케이션 레벨까지 동일하게 사용됩니다. `DispatcherServlet`은 모든 요청을 중앙에서 관리하며, 요청을 적절한 컨트롤러에 매핑합니다.
+   - **Handler Mapping**: `DispatcherServlet`은 URL 패턴과 HTTP 메서드에 따라 적절한 컨트롤러를 찾기 위해 **HandlerMapping**을 사용합니다. 스레드는 이 HandlerMapping 로직을 거쳐 적합한 컨트롤러 메서드에 요청을 전달합니다.
+   - **Handler Adapter**: 매핑된 핸들러가 결정되면, `DispatcherServlet`은 **Handler Adapter**를 사용해 컨트롤러의 메서드를 호출합니다.
+
+### 5. 컨트롤러 및 비즈니스 로직 처리
+   - **Service 계층 호출 및 데이터 처리**: 컨트롤러 메서드는 요청에 필요한 비즈니스 로직을 수행하기 위해 **Service 계층**을 호출합니다. 이때 서비스 계층에서는 데이터베이스 접근이나 외부 API 호출이 포함될 수 있습니다.
+   - **트랜잭션 관리**: Spring에서 `@Transactional` 어노테이션을 사용하는 경우, 동일한 스레드 내에서 트랜잭션 경계를 형성하여 데이터 일관성을 보장합니다.
+   - **스레드가 지속적으로 처리**: 요청에 할당된 스레드는 서비스 로직을 수행하는 동안에도 계속 유지되며, 서비스 작업이 완료되면 해당 데이터를 컨트롤러로 반환합니다.
+
+### 6. 응답 데이터 생성 및 뷰 렌더링
+   - **ModelAndView 반환**: 컨트롤러는 최종 결과를 `ModelAndView` 객체에 담아 반환합니다. 이 객체는 사용자에게 보여줄 뷰와 뷰에 전달할 모델 데이터를 포함하고 있습니다.
+   - **View Resolver**: `DispatcherServlet`은 반환된 `ModelAndView`를 통해 적절한 뷰를 찾기 위해 **View Resolver**를 사용합니다. 뷰가 JSP, Thymeleaf와 같은 템플릿 엔진일 경우 HTML 응답을 생성하고, REST API라면 JSON으로 직렬화된 데이터를 반환합니다.
+   - **Response 객체에 쓰기**: 최종적으로 워커 스레드는 렌더링된 응답을 `Response` 객체에 작성하며, 이 `Response`는 클라이언트에게 전송될 준비를 합니다.
+
+### 7. 응답 전송 및 스레드 반환
+   - **응답 완료 후 스레드 반환**: 모든 작업이 완료되면, 워커 스레드는 클라이언트에게 응답을 전송합니다. 이 작업이 끝난 후에 Tomcat은 해당 스레드를 스레드 풀에 반환하여 다음 요청을 처리할 수 있도록 합니다.
+   - **스레드 재사용**: 스레드는 특정 요청이 아닌 스레드 풀을 통해 관리되므로, 하나의 요청이 완료되면 다른 요청을 처리하기 위해 스레드가 재사용됩니다. 이를 통해 Tomcat은 메모리 사용을 최적화하며, 동시 요청에 대응할 수 있는 성능을 유지합니다.
+
+---
+
+### 비동기 요청 처리 시의 스레드 동작
+
+특정 상황에서는 비동기 처리를 통해 메인 워커 스레드를 반환하고, 별도의 스레드에서 처리가 이루어지기도 합니다.
+
+   - **Callable과 DeferredResult 사용**: 비동기 처리를 위해 `Callable`과 `DeferredResult` 같은 비동기 처리 전략을 사용할 수 있습니다. 이 경우 `DispatcherServlet`은 워커 스레드를 반환하고, 다른 스레드에서 작업을 처리할 수 있도록 합니다.
+   - **별도의 스레드 풀**: Spring에서는 비동기 작업을 위해 별도의 스레드 풀을 사용할 수 있습니다. 요청이 비동기적으로 처리되는 동안 워커 스레드는 풀로 반환되고, 작업 완료 시 다시 새 스레드가 요청 응답을 마무리합니다.
+
+---
+
+![image](https://github.com/user-attachments/assets/800ab546-4303-446e-9bd4-7702d5dbee66)
