@@ -415,3 +415,7 @@ Tomcat의 스레드가 소켓으로 네트워크 요청을 받아들여 이를 S
 ---
 
 ![image](https://github.com/user-attachments/assets/800ab546-4303-446e-9bd4-7702d5dbee66)
+
+### Reference
+
+- [virtual thread](https://d2.naver.com/helloworld/1203723)
